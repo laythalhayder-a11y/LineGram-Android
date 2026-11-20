@@ -1,0 +1,127 @@
+{
+  "project_info": {
+    "project_number": "000000000000",
+    "firebase_url": "https://linegram-placeholder.firebaseio.com",
+    "project_id": "linegram-placeholder",
+    "storage_bucket": "linegram-placeholder.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:000000000000:android:0000000000000001",
+        "android_client_info": {
+          "package_name": "org.linegram.messenger"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "000000000000-linegramplaceholder.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "ALINEGRAM_PLACEHOLDER_KEY_REPLACE_ME_00"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "000000000000-linegramplaceholder.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:000000000000:android:0000000000000002",
+        "android_client_info": {
+          "package_name": "org.linegram.messenger.beta"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "000000000000-linegramplaceholder.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "ALINEGRAM_PLACEHOLDER_KEY_REPLACE_ME_00"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "000000000000-linegramplaceholder.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:000000000000:android:0000000000000003",
+        "android_client_info": {
+          "package_name": "org.linegram.messenger.web"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "000000000000-linegramplaceholder.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "ALINEGRAM_PLACEHOLDER_KEY_REPLACE_ME_00"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "000000000000-linegramplaceholder.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:000000000000:android:0000000000000004",
+        "android_client_info": {
+          "package_name": "org.telegram.messenger"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "000000000000-linegramplaceholder.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "ALINEGRAM_PLACEHOLDER_KEY_REPLACE_ME_00"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "000000000000-linegramplaceholder.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
