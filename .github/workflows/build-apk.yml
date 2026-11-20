@@ -125,11 +125,17 @@ jobs:
       - name: Collect the APK
         id: collect
         run: |
-          apk="$(find TMessagesProj_App/build/outputs/apk -name '*.apk' | head -n 1)"
+          # The APK is normally in build/outputs/apk; with a one-CPU-type build it can be under build/intermediates.
+          list="$(find TMessagesProj_App -type f -name '*.apk' -not -path '*/src/*' 2>/dev/null | grep -v -i androidtest || true)"
+          echo "APK files found:"
+          printf '%s\n' "$list"
+          apk="$(printf '%s\n' "$list" | grep '/outputs/apk/' | head -n 1 || true)"
+          if [ -z "$apk" ]; then apk="$(printf '%s\n' "$list" | head -n 1 || true)"; fi
           if [ -z "$apk" ]; then
             echo "::error::The build finished without an APK file."
             exit 1
           fi
+          echo "Using $apk"
           version="$(grep -E '^APP_VERSION_NAME=' gradle.properties | cut -d= -f2 | tr -d '[:space:]')"
           name="LineGram-$version.apk"
           if [ "$KEYS" = "missing" ]; then name="LineGram-$version-TEST-cannot-log-in.apk"; fi
@@ -180,6 +186,9 @@ jobs:
             echo "cpu:    $CPU_CHOICE"
             echo "steps:  $OUTCOMES"
             echo "time:   $(date -u '+%Y-%m-%d %H:%M UTC')"
+            echo
+            echo "apk files:"
+            find TMessagesProj_App -type f -name '*.apk' -not -path '*/src/*' -printf '  %s bytes  %p\n' 2>/dev/null
             echo
             df -h /
             echo

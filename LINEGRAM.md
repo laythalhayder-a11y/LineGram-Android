@@ -13,7 +13,7 @@ with their Telegram phone number and see their Telegram chats. It is not a separ
 |------|-------|
 | Source code | Complete. All 14,160 original files match Telegram's GitHub repository. The 22 third-party folders missing from the ZIP download are fetched by `fetch_submodules.sh`. |
 | Rename to LineGram | Done and checked: Java syntax of the edited files, every edited XML and JSON file, pixel size and format of every replaced image. |
-| APK | **Not built yet.** The machine that prepared this project had no access to the Android SDK download servers. The build steps below follow Telegram's own instructions, but the first real build may need small fixes. |
+| APK | Builds on GitHub: the first run finished the whole Gradle build in 16 minutes (arm64). Not tested on a phone yet. |
 
 ## 1. Three things to do before the first build
 
@@ -34,7 +34,7 @@ Step 3 is automatic in the GitHub build below.
    once for `TG_API_ID` and once for `TG_API_HASH`. Never write them into `gradle.properties` in a public
    repository: everyone can read that file.
 3. The build starts by itself after every push to `main`. To start it by hand:
-   **Actions → Build LineGram APK → Run workflow**. One build takes about one to two hours.
+   **Actions → Build LineGram APK → Run workflow**. One build takes about half an hour.
 4. When the run is green, open **Releases** on the repository page and download the `.apk` file.
    This works from the phone too. The same APK is also under Artifacts at the bottom of the run page.
 
