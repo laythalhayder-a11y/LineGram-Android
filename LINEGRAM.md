@@ -13,7 +13,7 @@ with their Telegram phone number and see their Telegram chats. It is not a separ
 |------|-------|
 | Source code | Complete. All 14,160 original files match Telegram's GitHub repository. The 22 third-party folders missing from the ZIP download are fetched by `fetch_submodules.sh`. |
 | Rename to LineGram | Done and checked: Java syntax of the edited files, every edited XML and JSON file, pixel size and format of every replaced image. |
-| APK | Builds on GitHub in about 25 minutes (arm64). |
+| APK | Builds on GitHub in about 25 minutes (arm64). Build 5 installs and runs on a Samsung phone. |
 
 ## 1. Three things to do before the first build
 

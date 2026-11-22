@@ -147,8 +147,9 @@ jobs:
             fi
           fi
           version="$(grep -E '^APP_VERSION_NAME=' gradle.properties | cut -d= -f2 | tr -d '[:space:]')"
-          name="LineGram-$version.apk"
-          if [ "$KEYS" = "missing" ]; then name="LineGram-$version-TEST-cannot-log-in.apk"; fi
+          # the build number in the name keeps a new download apart from an older one on the phone
+          name="LineGram-$version-build$GITHUB_RUN_NUMBER.apk"
+          if [ "$KEYS" = "missing" ]; then name="LineGram-$version-build$GITHUB_RUN_NUMBER-TEST-cannot-log-in.apk"; fi
           mkdir -p out
           cp "$apk" "out/$name"
           ls -lh out
