@@ -132,6 +132,7 @@ import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.ImageReceiver;
 import org.telegram.messenger.LiteMode;
+import org.telegram.messenger.LineGramConfig;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MediaController;
 import org.telegram.messenger.MediaDataController;
@@ -3093,6 +3094,19 @@ public class ChatActivityEnterView extends FrameLayout implements
                                     });
                                     return true;
                                 }
+                                if (!isInVideoMode() && !isInScheduleMode() && LineGramConfig.confirmVoice()) {
+                                    // LineGram: stop into the preview first, then ask before sending
+                                    if (sendButtonVisible) {
+                                        calledRecordRunnable = true;
+                                    }
+                                    MediaController.getInstance().toggleRecordingPause(voiceOnce);
+                                    delegate.needStartRecordAudio(0);
+                                    if (slideText != null) {
+                                        slideText.setEnabled(false);
+                                    }
+                                    lineGramConfirmVoice();
+                                    return true;
+                                }
                                 MediaController.getInstance().stopRecording(isInScheduleMode() ? 3 : 1, true, 0, voiceOnce, 0);
                                 delegate.needStartRecordAudio(0);
                             }
@@ -3206,6 +3220,19 @@ public class ChatActivityEnterView extends FrameLayout implements
                                     AlertsCreator.ensurePaidMessageConfirmation(currentAccount, dialog_id, 1, payStars -> {
                                         sendMessageInternal(true, 0, 0, payStars, false);
                                     });
+                                    return true;
+                                }
+                                if (!isInVideoMode() && !isInScheduleMode() && LineGramConfig.confirmVoice()) {
+                                    // LineGram: stop into the preview first, then ask before sending
+                                    if (sendButtonVisible) {
+                                        calledRecordRunnable = true;
+                                    }
+                                    MediaController.getInstance().toggleRecordingPause(voiceOnce);
+                                    delegate.needStartRecordAudio(0);
+                                    if (slideText != null) {
+                                        slideText.setEnabled(false);
+                                    }
+                                    lineGramConfirmVoice();
                                     return true;
                                 }
                                 if (recordingAudioVideo && isInScheduleMode()) {
@@ -7380,6 +7407,26 @@ public class ChatActivityEnterView extends FrameLayout implements
             return true;
         } else {
             return sendMessageInternal(true, 0, 0, 0, true);
+        }
+    }
+
+    // LineGram: set while a send the user already confirmed runs, so it is not asked twice
+    private boolean lineGramSendConfirmed;
+
+    private boolean lineGramShouldConfirm(boolean enabled) {
+        return enabled && !lineGramSendConfirmed && !isInScheduleMode() && !AlertsCreator.needsPaidMessageAlert(currentAccount, dialog_id);
+    }
+
+    private void lineGramConfirmVoice() {
+        LineGramConfig.confirmSend(getContext(), resourcesProvider, LocaleController.getString(R.string.LineGramConfirmVoiceText), () -> lineGramSendRecordedVoice(0), null);
+    }
+
+    // The recorded file reaches the preview a moment after the recording stops.
+    private void lineGramSendRecordedVoice(int attempt) {
+        if (audioToSend != null) {
+            sendMessageInternal(true, 0, 0, 0, false);
+        } else if (attempt < 20) {
+            AndroidUtilities.runOnUIThread(() -> lineGramSendRecordedVoice(attempt + 1), 100);
         }
     }
 
@@ -12253,7 +12300,13 @@ public class ChatActivityEnterView extends FrameLayout implements
 
                     @Override
                     public void sendButtonPressed(int index, VideoEditedInfo videoEditedInfo, boolean notify, int scheduleDate, int scheduleRepeatPeriod, boolean forceDocument) {
-                        onGifSelected(view, gif, query, parent, notify, scheduleDate, scheduleRepeatPeriod, entry, isCaptionAbove);
+                        // LineGram: the send button of the caption editor already confirmed it
+                        lineGramSendConfirmed = true;
+                        try {
+                            onGifSelected(view, gif, query, parent, notify, scheduleDate, scheduleRepeatPeriod, entry, isCaptionAbove);
+                        } finally {
+                            lineGramSendConfirmed = false;
+                        }
                     }
 
                     @Override
@@ -12420,6 +12473,18 @@ public class ChatActivityEnterView extends FrameLayout implements
             }
 
             public void onGifSelected(View view, Object gif, String query, Object parent, boolean notify, int scheduleDate, int scheduleRepeatPeriod, MediaController.PhotoEntry entry, boolean invertMedia) {
+                if (lineGramShouldConfirm(LineGramConfig.confirmGif())) {
+                    // LineGram: ask before sending the GIF
+                    LineGramConfig.confirmSend(getContext(), resourcesProvider, LocaleController.getString(R.string.LineGramConfirmGifText), () -> {
+                        lineGramSendConfirmed = true;
+                        try {
+                            onGifSelected(view, gif, query, parent, notify, scheduleDate, scheduleRepeatPeriod, entry, invertMedia);
+                        } finally {
+                            lineGramSendConfirmed = false;
+                        }
+                    }, null);
+                    return;
+                }
                 if (replyingQuote != null && parentFragment != null && replyingQuote.outdated) {
                     parentFragment.showQuoteMessageUpdate();
                     return;
@@ -12768,6 +12833,21 @@ public class ChatActivityEnterView extends FrameLayout implements
     @Override
     public void onStickerSelected(TLRPC.Document sticker, String query, Object parent, MessageObject.SendAnimationData sendAnimationData, boolean clearsInputField, boolean notify, int scheduleDate, int scheduleRepeatPeriod) {
         if (isLiveComment) return;
+        if (sticker != null) {
+            final boolean isGif = MessageObject.isGifDocument(sticker);
+            if (lineGramShouldConfirm(isGif ? LineGramConfig.confirmGif() : LineGramConfig.confirmSticker())) {
+                // LineGram: ask first; the fly-in animation is dropped because its source view is gone by then
+                LineGramConfig.confirmSend(getContext(), resourcesProvider, LocaleController.getString(isGif ? R.string.LineGramConfirmGifText : R.string.LineGramConfirmStickerText), () -> {
+                    lineGramSendConfirmed = true;
+                    try {
+                        onStickerSelected(sticker, query, parent, null, clearsInputField, notify, scheduleDate, scheduleRepeatPeriod);
+                    } finally {
+                        lineGramSendConfirmed = false;
+                    }
+                }, null);
+                return;
+            }
+        }
         if (replyingQuote != null && parentFragment != null && replyingQuote.outdated) {
             parentFragment.showQuoteMessageUpdate();
             return;

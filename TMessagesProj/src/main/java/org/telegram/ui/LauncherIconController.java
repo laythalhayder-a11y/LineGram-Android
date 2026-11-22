@@ -37,9 +37,14 @@ public class LauncherIconController {
         DEFAULT("DefaultIcon", R.drawable.icon_background_sa, R.mipmap.icon_foreground_sa, R.string.AppIconDefault),
         VINTAGE("VintageIcon", R.drawable.icon_6_background_sa, R.mipmap.icon_6_foreground_sa, R.string.AppIconVintage),
         AQUA("AquaIcon", R.drawable.icon_4_background_sa, R.mipmap.icon_foreground_sa, R.string.AppIconAqua),
-        PREMIUM("PremiumIcon", R.drawable.icon_3_background_sa, R.mipmap.icon_3_foreground_sa, R.string.AppIconPremium, true),
-        TURBO("TurboIcon", R.drawable.icon_5_background_sa, R.mipmap.icon_5_foreground_sa, R.string.AppIconTurbo, true),
-        NOX("NoxIcon", R.mipmap.icon_2_background_sa, R.mipmap.icon_foreground_sa, R.string.AppIconNox, true);
+        // LineGram: every icon is free to pick, none is locked behind Premium
+        PREMIUM("PremiumIcon", R.drawable.icon_3_background_sa, R.mipmap.icon_3_foreground_sa, R.string.AppIconPremium),
+        TURBO("TurboIcon", R.drawable.icon_5_background_sa, R.mipmap.icon_5_foreground_sa, R.string.AppIconTurbo),
+        NOX("NoxIcon", R.mipmap.icon_2_background_sa, R.mipmap.icon_foreground_sa, R.string.AppIconNox),
+        NIGHT("NightIcon", R.drawable.icon_7_background_sa, R.mipmap.icon_foreground_sa, R.string.LineGramIconNight),
+        EMERALD("EmeraldIcon", R.drawable.icon_8_background_sa, R.mipmap.icon_foreground_sa, R.string.LineGramIconEmerald),
+        RUBY("RubyIcon", R.drawable.icon_9_background_sa, R.mipmap.icon_foreground_sa, R.string.LineGramIconRuby),
+        GOLD("GoldIcon", R.drawable.icon_10_background_sa, R.mipmap.icon_foreground_sa, R.string.LineGramIconGold);
 
         public final String key;
         public final int background;

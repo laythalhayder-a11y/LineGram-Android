@@ -108,6 +108,11 @@ def variant_background(variant):
                 f'<stop offset="0" stop-color="{stops[0]}"/><stop offset="0.5" stop-color="{stops[1]}"/>'
                 f'<stop offset="1" stop-color="{stops[2]}"/></linearGradient>')
         return defs, '<rect width="108" height="108" fill="url(#bg)"/>'
+    if variant in EXTRA_ICONS:   # LineGram's own colours: plain vertical gradient
+        bottom, top = EXTRA_ICONS[variant][1], EXTRA_ICONS[variant][2]
+        defs = ('<linearGradient id="bg" gradientUnits="userSpaceOnUse" x1="0" y1="108" x2="0" y2="0">'
+                f'<stop offset="0" stop-color="{bottom}"/><stop offset="1" stop-color="{top}"/></linearGradient>')
+        return defs, '<rect width="108" height="108" fill="url(#bg)"/>'
     if variant == '6':   # "Vintage": plain vertical blue
         defs = ('<linearGradient id="bg" gradientUnits="userSpaceOnUse" x1="0" y1="108" x2="0" y2="0">'
                 '<stop offset="0" stop-color="#1D93D2"/><stop offset="1" stop-color="#37AFE3"/></linearGradient>')
@@ -116,6 +121,53 @@ def variant_background(variant):
 
 
 SVG_HEAD = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 {w} {h}">'
+
+# ---- extra LineGram launcher icons (chosen in Settings > LineGram Settings) ----
+# number -> (manifest alias key, gradient bottom, gradient top)
+EXTRA_ICONS = {
+    '7': ('NightIcon', '#121216', '#3A3A44'),
+    '8': ('EmeraldIcon', '#0E8F73', '#35D98A'),
+    '9': ('RubyIcon', '#B5122E', '#FF5C6C'),
+    '10': ('GoldIcon', '#D98A06', '#FFCF4D'),
+}
+
+ADAPTIVE_ICON = """<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@drawable/{background}" />
+    <foreground android:drawable="@mipmap/{foreground}" />
+    <monochrome android:drawable="@drawable/icon_plane" />
+</adaptive-icon>
+"""
+
+
+def make_extra_icons():
+    """Creates every file an extra icon needs (the six built-in ones already exist)."""
+    sizes = {'mdpi': 48, 'hdpi': 72, 'xhdpi': 96, 'xxhdpi': 144, 'xxxhdpi': 192}
+    for n, (_key, bottom, top) in EXTRA_ICONS.items():
+        write_text(os.path.join(RES, 'drawable', f'icon_{n}_background_sa.xml'),
+                   '<?xml version="1.0" encoding="utf-8"?>\n'
+                   '<shape xmlns:android="http://schemas.android.com/apk/res/android">\n'
+                   '    <gradient\n'
+                   '        android:type="linear"\n'
+                   '        android:angle="90"\n'
+                   f'        android:startColor="{bottom}"\n'
+                   f'        android:endColor="{top}" />\n'
+                   '</shape>\n')
+        for suffix, clip in (('', 'icon_background_clip'), ('_round', 'icon_background_clip_round')):
+            write_text(os.path.join(RES, 'drawable', f'icon_{n}_background{suffix}.xml'),
+                       '<?xml version="1.0" encoding="utf-8"?>\n'
+                       '<layer-list xmlns:android="http://schemas.android.com/apk/res/android">\n'
+                       f'    <item android:drawable="@drawable/icon_{n}_background_sa" />\n'
+                       f'    <item android:drawable="@mipmap/{clip}" />\n'
+                       '</layer-list>\n')
+            write_text(os.path.join(RES, 'mipmap-anydpi-v26', f'icon_{n}_launcher{suffix}.xml'),
+                       ADAPTIVE_ICON.format(background=f'icon_{n}_background{suffix}', foreground=f'icon_foreground{suffix}'))
+        ring = ring_icon_svg(n)
+        for d, px in sizes.items():
+            for suffix in ('', '_round'):
+                path = os.path.join(RES, f'mipmap-{d}', f'icon_{n}_launcher{suffix}.png')
+                render(ring, px, px).save(path, 'PNG', optimize=True)
+                written.append(os.path.relpath(path, ROOT))
 
 
 # ---- 1. adaptive icon foregrounds (108 x 108 dp, white mark) --------------------
@@ -389,6 +441,7 @@ def main():
     make_splash()
     make_qr_logo()
     make_lottie_logos()
+    make_extra_icons()
     print(f'{len(written)} files written')
     for p in written:
         print('  ', p)

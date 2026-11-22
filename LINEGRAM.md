@@ -64,11 +64,28 @@ On Windows keep the project in a short path such as `C:\lg`. Long paths can brea
 |------|--------|
 | App id | `org.telegram.messenger` → `org.linegram.messenger` (`APP_PACKAGE` in `gradle.properties`) |
 | App name | `LineGram` / `لاين كرام` in all bundled languages. Downloaded language packs cannot rename it. |
-| Logo | New launcher icons (all six variants), notification icon, splash, intro logo, header wordmark, QR-code logo and its animation |
+| Logo | New launcher icons (six variants, plus four new colours), notification icon, splash, intro logo, header wordmark, QR-code logo and its animation |
 | API keys | Read from `gradle.properties` instead of the public sample keys |
 | Account and contact ids | Own Android account type and contact data types, so LineGram and Telegram can be installed side by side |
 | Official-only features | Passkeys, Google Play Billing, SafetyNet and Firebase phone verification are switched off |
 | Official Google keys | The Maps key, the SafetyNet key and the Firebase file of the official app were replaced by placeholders. See section 5. |
+
+### LineGram's own features (Settings > LineGram Settings)
+
+All switches live in `org.telegram.messenger.LineGramConfig` (its own preferences file, all on by default)
+and are shown by `org.telegram.ui.LineGramSettingsActivity`.
+
+| Feature | Where in the code |
+|---------|-------------------|
+| App icon picker: ten icons, none locked | `LauncherIconController`, `AndroidManifest.xml` aliases `NightIcon`, `EmeraldIcon`, `RubyIcon`, `GoldIcon` |
+| Saved photos, videos, music and files go to a `LineGram` folder | `MediaController`, `AndroidUtilities`, `ImageLoader`, `SharedConfig` |
+| Confirm before sending a voice message, sticker or GIF | `ChatActivityEnterView` |
+| Hide the stories bar and the story button | `DialogsActivity` |
+| Hide Premium, Stars, Business and gift buttons | `SettingsActivity`, `ProfileActivity` |
+| ID row in every profile (tap to copy), ID under your name in Settings | `ProfileActivity`, `SettingsActivity` |
+| Seconds in message time | `ChatMessageCell.timeString` |
+| Full date with seconds in the message long-press menu (tap to copy) | `ChatActivity.fillMessageMenu` |
+| Hide your own phone number in Settings and your profile | `SettingsActivity`, `ProfileActivity` |
 
 `linegram_branding/make_brand.py` redraws every logo file. Change the colours at the top of that file and run it again.
 `linegram_branding/apply_rebrand.py` lists every text edit made to the Telegram source. Run it as

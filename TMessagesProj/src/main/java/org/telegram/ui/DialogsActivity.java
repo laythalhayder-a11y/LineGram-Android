@@ -115,6 +115,7 @@ import org.telegram.messenger.ImageLoader;
 import org.telegram.messenger.ImageLocation;
 import org.telegram.messenger.ImageReceiver;
 import org.telegram.messenger.LiteMode;
+import org.telegram.messenger.LineGramConfig;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MediaController;
 import org.telegram.messenger.MediaDataController;
@@ -6947,6 +6948,13 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         if (dialogStoriesCell != null) {
             dialogStoriesCell.onResume();
         }
+        if (lineGramStoriesHidden != LineGramConfig.hideStories()) {
+            // LineGram: the stories setting changed while this screen was hidden
+            lineGramStoriesHidden = LineGramConfig.hideStories();
+            updateStoriesPosting();
+            updateStoriesVisibility(false);
+            updateFloatingButtonVisibility(false);
+        }
         if (rightSlidingDialogContainer != null) {
             rightSlidingDialogContainer.onResume();
         }
@@ -8788,7 +8796,8 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             floatingButton3.setButtonVisible(isVisible, animated);
         }
         if (floatingButtonStories != null) {
-            floatingButtonStories.setButtonVisible(isVisible, animated);
+            // LineGram: no story camera button while stories are hidden
+            floatingButtonStories.setButtonVisible(isVisible && !LineGramConfig.hideStories(), animated);
         }
     }
 
@@ -8809,8 +8818,9 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     }
 
     public boolean storiesEnabled = true;
+    private boolean lineGramStoriesHidden = LineGramConfig.hideStories();
     private void updateStoriesPosting() {
-        final boolean storiesEnabled = getMessagesController().storiesEnabled();
+        final boolean storiesEnabled = getMessagesController().storiesEnabled() && !LineGramConfig.hideStories();
         if (this.storiesEnabled != storiesEnabled) {
             updateFloatingButtonOffset();
             if (!this.storiesEnabled && storiesEnabled && storyHint != null) {
@@ -12429,12 +12439,17 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         boolean newVisibility;
         if (communityId != 0) {
             newVisibility = false;
+        } else if (LineGramConfig.hideStories()) {
+            // LineGram: the user hid the stories bar
+            newVisibility = false;
+            onlySelfStories = false;
         } else if (isArchive()) {
             newVisibility = !getStoriesController().getHiddenList().isEmpty();
         } else {
             newVisibility = !onlySelfStories && getStoriesController().hasStories();
             onlySelfStories = getStoriesController().hasOnlySelfStories();
         }
+        lineGramStoriesHidden = LineGramConfig.hideStories();
 
         hasOnlySlefStories = onlySelfStories;
 

@@ -171,6 +171,7 @@ import org.telegram.messenger.ImageLocation;
 import org.telegram.messenger.ImageReceiver;
 import org.telegram.messenger.LanguageDetector;
 import org.telegram.messenger.LiteMode;
+import org.telegram.messenger.LineGramConfig;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.LocationController;
 import org.telegram.messenger.MediaController;
@@ -1297,6 +1298,7 @@ public class ChatActivity extends BaseFragment implements
     public final static int OPTION_WELCOME_REVERT = 116;
     public final static int OPTION_SEND_MONEY = 117;
     public final static int OPTION_STOP_LIVE_LOCATION = 118;
+    public final static int OPTION_LINEGRAM_FULL_DATE = 900;
 
     private final static int[] allowedNotificationsDuringChatListAnimations = new int[]{
             NotificationCenter.messagesRead,
@@ -35291,6 +35293,13 @@ public class ChatActivity extends BaseFragment implements
             case OPTION_WELCOME_REVERT:
                 getMessagesController().revertWelcomeEphemeralMessage(selectedObject);
                 break;
+            case OPTION_LINEGRAM_FULL_DATE: {
+                // LineGram: the menu shows the full date; a tap copies it
+                if (selectedObject.messageOwner != null && AndroidUtilities.addToClipboard(LineGramConfig.formatFullDate(selectedObject.messageOwner.date))) {
+                    BulletinFactory.of(ChatActivity.this).createCopyBulletin(getString(R.string.LineGramDateCopied)).show();
+                }
+                break;
+            }
             case OPTION_SUGGESTION_ADD_OFFER:
             case OPTION_SUGGESTION_EDIT_PRICE: {
                 final MessageObject msg = selectedObjectGroup != null ? selectedObjectGroup.findPrimaryMessageObject() : selectedObject;
@@ -47108,6 +47117,14 @@ public class ChatActivity extends BaseFragment implements
             items.add(getString(R.string.WelcomeMessageRevert));
             options.add(OPTION_WELCOME_REVERT);
             icons.add(R.drawable.outline_revert_24);
+        }
+
+        // LineGram: the message's full date and time, with seconds
+        if (LineGramConfig.fullDate() && selectedObject != null && selectedObject.messageOwner != null && selectedObject.messageOwner.date > 0
+                && !selectedObject.isSponsored() && !(chatMode == MODE_SCHEDULED && selectedObject.messageOwner.date == 0x7FFFFFFE)) {
+            items.add(LineGramConfig.formatFullDate(selectedObject.messageOwner.date));
+            options.add(OPTION_LINEGRAM_FULL_DATE);
+            icons.add(R.drawable.msg_calendar2);
         }
     }
 

@@ -41,3 +41,4 @@ TMessagesProj/jni/ffmpeg/build_android
 # LineGram: your private signing key and keys file stay on your computer
 /linegram-release.keystore
 /keystore.properties
+__pycache__/

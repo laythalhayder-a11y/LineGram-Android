@@ -73,6 +73,7 @@ import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.ImageLoader;
 import org.telegram.messenger.ImageLocation;
+import org.telegram.messenger.LineGramConfig;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MediaDataController;
 import org.telegram.messenger.MessagesController;
@@ -455,6 +456,16 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         subtitleView.setSingleLine();
         subtitleView.setEllipsize(TextUtils.TruncateAt.END);
         topView.addView(subtitleView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL | Gravity.TOP, 0, 168 - 12, 0, 0));
+        // LineGram: a tap on the line under the name copies the account ID
+        subtitleView.setOnClickListener(v -> {
+            if (!LineGramConfig.showId()) {
+                return;
+            }
+            final TLRPC.User self = getUserConfig().getCurrentUser();
+            if (self != null && AndroidUtilities.addToClipboard(String.valueOf(self.id))) {
+                BulletinFactory.of(this).createCopyBulletin(getString(R.string.LineGramIdCopied)).show();
+            }
+        });
 
         versionView = new TextView(context);
         versionView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
@@ -530,11 +541,18 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         titleView.setText(UserObject.getUserName(user));
         final StringBuilder sb = new StringBuilder();
         if (user != null) {
-            sb.append(PhoneFormat.getInstance().format("+" + user.phone));
+            if (LineGramConfig.hidePhone()) {
+                sb.append(getString(R.string.LineGramPhoneHidden));
+            } else {
+                sb.append(PhoneFormat.getInstance().format("+" + user.phone));
+            }
         }
         final String username = UserObject.getPublicUsername(user);
         if (username != null) {
             sb.append(" • @").append(username);
+        }
+        if (user != null && LineGramConfig.showId()) {
+            sb.append(" • ID ").append(user.id);
         }
         subtitleView.setText(sb);
 
@@ -609,6 +627,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
     @Override
     public void onResume() {
         super.onResume();
+        setInfo();
         if (listView.adapter != null) {
             listView.adapter.update(false);
         }
@@ -795,6 +814,10 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             items.add(UItem.asShadow(null));
         }
 
+        // LineGram: the app's own features come first
+        items.add(SettingCell.Factory.of(40, 0xFFFF9A5C, 0xFFF96B33, R.drawable.settings_features, getString(R.string.LineGramSettings), getString(R.string.LineGramSettingsInfo)));
+        items.add(UItem.asShadow(null));
+
         items.add(SettingCell.Factory.of(1, IconBackgroundColors.BLUE.top, IconBackgroundColors.BLUE.bottom, R.drawable.settings_account, getString(R.string.SettingsAccount), getString(R.string.SettingsAccountInfo)));
         items.add(SettingCell.Factory.of(2, IconBackgroundColors.ORANGE.top, IconBackgroundColors.ORANGE.bottom, R.drawable.settings_chat, getString(R.string.SettingsChat), getString(R.string.SettingsChatInfo)));
         items.add(SettingCell.Factory.of(3, IconBackgroundColors.GREEN.top, IconBackgroundColors.GREEN.bottom, R.drawable.settings_privacy, getString(R.string.SettingsPrivacySecurity), getString(R.string.SettingsPrivacySecurityInfo)));
@@ -812,10 +835,11 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             items.add(UItem.asShadow(null));
         }
 
-        if (!getMessagesController().premiumFeaturesBlocked()) {
+        final boolean lineGramHidePremium = LineGramConfig.hidePremium();
+        if (!lineGramHidePremium && !getMessagesController().premiumFeaturesBlocked()) {
             items.add(SettingCell.Factory.of(11, 0xFFB659FF, 0xFF617CFF, R.drawable.settings_premium, getString(R.string.TelegramPremium)));
         }
-        if (getMessagesController().starsPurchaseAvailable()) {
+        if (!lineGramHidePremium && getMessagesController().starsPurchaseAvailable()) {
             StarsController c = StarsController.getInstance(currentAccount);
             long balance = c.getBalance().amount;
             items.add(SettingCell.Factory.of(12, 0xFFEFA612, 0xFFE77512, R.drawable.settings_stars, getString(R.string.TelegramStars), null, c.balanceAvailable() && balance > 0 ? StarsIntroActivity.formatStarsAmount(c.getBalance(), 0.85f, ' ') : ""));
@@ -827,10 +851,10 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             items.add(SettingCell.Factory.of(13, 0xFF1BA4ED, 0xFF1488E1, R.drawable.filled_gram_earnings, getString(R.string.GramEarnings), null, c.balanceAvailable() && balance > 0 ? StarsIntroActivity.formatStarsAmount(c.getBalance(), 0.85f, ' ') : ""));
         }
 
-        if (!getMessagesController().premiumFeaturesBlocked()) {
+        if (!lineGramHidePremium && !getMessagesController().premiumFeaturesBlocked()) {
             items.add(SettingCell.Factory.of(15, 0xFFF45255, 0xFFDF3955, R.drawable.settings_business, getString(R.string.TelegramBusiness)));
         }
-        if (!getMessagesController().premiumPurchaseBlocked()) {
+        if (!lineGramHidePremium && !getMessagesController().premiumPurchaseBlocked()) {
             items.add(SettingCell.Factory.of(16, 0xFFF38B31, 0xFFE26314, R.drawable.settings_gift, getString(R.string.SendAGift)));
         }
         if (items.get(items.size() - 1).viewType != UniversalAdapter.VIEW_TYPE_SHADOW)
@@ -1001,6 +1025,10 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             }
             case 27: {
                 presentFragment(new HeaderSettingsActivity());
+                break;
+            }
+            case 40: {
+                presentSettingFragment(new LineGramSettingsActivity());
                 break;
             }
         }
