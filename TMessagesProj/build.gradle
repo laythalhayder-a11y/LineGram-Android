@@ -30,6 +30,11 @@ idea {
 repositories {
     mavenCentral()
     google()
+    // LineGram: Tesseract OCR is published on JitPack; only that group may come from there
+    maven {
+        url 'https://jitpack.io'
+        content { includeGroup 'cz.adaptech.tesseract4android' }
+    }
 }
 
 configurations {
@@ -107,7 +112,9 @@ dependencies {
     api project(":TMessagesProj_Modules:media3:media-lib-session")
     api project(':jlatexmath')
 
-//    implementation 'com.google.mlkit:translate:17.0.3'
+    // LineGram: offline translation to Arabic (models downloaded once) and offline OCR of photos
+    implementation 'com.google.mlkit:translate:17.0.3'
+    implementation 'cz.adaptech.tesseract4android:tesseract4android:4.8.0'
 
     implementation 'com.google.android.recaptcha:recaptcha:18.7.1'
 

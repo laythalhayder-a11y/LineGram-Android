@@ -1299,6 +1299,7 @@ public class ChatActivity extends BaseFragment implements
     public final static int OPTION_SEND_MONEY = 117;
     public final static int OPTION_STOP_LIVE_LOCATION = 118;
     public final static int OPTION_LINEGRAM_FULL_DATE = 900;
+    public final static int OPTION_LINEGRAM_TRANSLATE_AR = 901;
 
     private final static int[] allowedNotificationsDuringChatListAnimations = new int[]{
             NotificationCenter.messagesRead,
@@ -1714,6 +1715,7 @@ public class ChatActivity extends BaseFragment implements
     private final static int open_forum = 61;
 
     private final static int translate = 62;
+    private final static int linegram_export_pdf = 900;
     private final static int scheduled = 63;
     private final static int edit_quick_reply = 64;
 
@@ -3919,6 +3921,9 @@ public class ChatActivity extends BaseFragment implements
                     }
                 } else if (id == mute) {
                     toggleMute(false);
+                } else if (id == linegram_export_pdf) {
+                    final String exportTitle = currentUser != null ? UserObject.getUserName(currentUser) : currentChat != null ? currentChat.title : "";
+                    LineGramChatExporter.start(ChatActivity.this, dialog_id, exportTitle);
                 } else if (id == add_shortcut) {
                     try {
                         getMediaDataController().installShortcut(currentUser.id, MediaDataController.SHORTCUT_TYPE_USER_OR_CHAT);
@@ -4423,6 +4428,10 @@ public class ChatActivity extends BaseFragment implements
             }
             if (currentUser != null && currentUser.self && getDialogId() != UserObject.VERIFY) {
                 headerItem.lazilyAddSubItem(add_shortcut, R.drawable.msg_home, LocaleController.getString(R.string.AddShortcut));
+            }
+            // LineGram: save the whole chat as a PDF file (not for secret chats or protected content)
+            if (!isTopic && chatMode == 0 && currentEncryptedChat == null && !isPeerNoForwards()) {
+                headerItem.lazilyAddSubItem(linegram_export_pdf, R.drawable.msg_download, LocaleController.getString(R.string.LineGramExportPdf));
             }
             if (!isTopic && !ChatObject.isMonoForum(currentChat)) {
                 clearHistoryItem = headerItem.lazilyAddSubItem(clear_history, R.drawable.msg_clear,
@@ -35293,6 +35302,11 @@ public class ChatActivity extends BaseFragment implements
             case OPTION_WELCOME_REVERT:
                 getMessagesController().revertWelcomeEphemeralMessage(selectedObject);
                 break;
+            case OPTION_LINEGRAM_TRANSLATE_AR: {
+                final String textToTranslate = selectedObject.messageOwner != null ? selectedObject.messageOwner.message : null;
+                LineGramTextTools.translateToArabic(getParentActivity(), getResourceProvider(), textToTranslate, lineGramBuilder -> showDialog(lineGramBuilder.create()));
+                break;
+            }
             case OPTION_LINEGRAM_FULL_DATE: {
                 // LineGram: the menu shows the full date; a tap copies it
                 if (selectedObject.messageOwner != null && AndroidUtilities.addToClipboard(LineGramConfig.formatFullDate(selectedObject.messageOwner.date))) {
@@ -46610,6 +46624,12 @@ public class ChatActivity extends BaseFragment implements
                     items.add(LocaleController.getString(R.string.TranslateMessage));
                     options.add(OPTION_TRANSLATE);
                     icons.add(R.drawable.msg_translate);
+                    // LineGram: translation to Arabic on the phone, no internet needed after the first time
+                    if (selectedObject.messageOwner != null && !TextUtils.isEmpty(selectedObject.messageOwner.message) && !isPeerNoForwards() && !selectedObject.messageOwner.noforwards) {
+                        items.add(LocaleController.getString(R.string.LineGramTranslateArabic));
+                        options.add(OPTION_LINEGRAM_TRANSLATE_AR);
+                        icons.add(R.drawable.msg_translate);
+                    }
                 }
                 if (message.canEditMessage(currentChat) && message.type != MessageObject.TYPE_POLL || chatMode == MODE_WELCOME_MESSAGES) {
                     items.add(LocaleController.getString(R.string.Edit));
@@ -46965,6 +46985,12 @@ public class ChatActivity extends BaseFragment implements
                     items.add(LocaleController.getString(R.string.TranslateMessage));
                     options.add(OPTION_TRANSLATE);
                     icons.add(R.drawable.msg_translate);
+                    // LineGram: translation to Arabic on the phone, no internet needed after the first time
+                    if (selectedObject.messageOwner != null && !TextUtils.isEmpty(selectedObject.messageOwner.message) && !isPeerNoForwards() && !selectedObject.messageOwner.noforwards) {
+                        items.add(LocaleController.getString(R.string.LineGramTranslateArabic));
+                        options.add(OPTION_LINEGRAM_TRANSLATE_AR);
+                        icons.add(R.drawable.msg_translate);
+                    }
                 }
                 if (allowEdit || chatMode == MODE_WELCOME_MESSAGES) {
                     items.add(LocaleController.getString(R.string.Edit));

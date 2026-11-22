@@ -54,6 +54,11 @@
 # https://developers.google.com/ml-kit/known-issues#android_issues
 -keep class com.google.mlkit.nl.languageid.internal.LanguageIdentificationJni { *; }
 
+# LineGram: ML Kit translation and Tesseract OCR call into Java from native code
+-keep class com.google.mlkit.nl.translate.internal.** { *; }
+-keep class com.googlecode.tesseract.android.** { *; }
+-keep class com.googlecode.leptonica.android.** { *; }
+
 # WidgetSandbox: JNI_OnLoad uses RegisterNatives; backend methods are called by native workers.
 -keep class org.telegram.utils.twidget.WidgetSandboxNative { *; }
 # The client's share (filters, gesture arbiter) in the client library: static Java_* exports, resolved by name.

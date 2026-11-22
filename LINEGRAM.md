@@ -88,6 +88,9 @@ and are shown by `org.telegram.ui.LineGramSettingsActivity`.
 | Hide your own phone number in Settings and your profile | `SettingsActivity`, `ProfileActivity` |
 | Orange is the default theme colour (accent 4 of the built-in themes) | `Theme`, `LineGramConfig.defaultAccentId` |
 | Clearer Arabic chat font: Cairo (default), Tajawal or the phone's font | `Theme.createCommonMessageResources`, `ChatActivityEnterView`, fonts in `assets/fonts/lg_*.ttf` (SIL OFL, licences next to them; line height tightened) |
+| Copy text from a photo, offline (Arabic + English): photo viewer menu | `LineGramOcr` (Tesseract4Android, models in `assets/tessdata`, Apache 2.0), `PhotoViewer` |
+| Translate a message to Arabic on the phone: message menu, and from the copied photo text | `LineGramTranslator` (ML Kit; each language's files, about 30 MB, are downloaded the first time) |
+| Export a whole chat to PDF (up to the latest 10,000 messages; not for secret chats or protected content) | `LineGramChatExporter`, chat menu in `ChatActivity` |
 
 `linegram_branding/make_brand.py` redraws every logo file. Change the colours at the top of that file and run it again.
 `linegram_branding/apply_rebrand.py` lists every text edit made to the Telegram source. Run it as

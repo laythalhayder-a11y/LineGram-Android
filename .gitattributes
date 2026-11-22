@@ -1,3 +1,5 @@
 # keep shell scripts runnable when the project is edited on Windows
 *.sh text eol=lf
 gradlew text eol=lf
+*.traineddata binary
+*.ttf binary

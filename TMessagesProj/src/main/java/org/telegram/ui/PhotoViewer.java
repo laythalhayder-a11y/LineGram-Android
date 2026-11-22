@@ -2188,6 +2188,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
     private final static int gallery_menu_chromecast = 24;
     private final static int gallery_menu_create_sticker = 25;
     private final static int gallery_menu_delete2 = 26;
+    private final static int gallery_menu_linegram_ocr = 900;
 
     private final static int ads_sponsor_info = 101;
     private final static int ads_about = 102;
@@ -5161,6 +5162,27 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                         ads.stop();
                         ads = null;
                     }
+                } else if (id == gallery_menu_linegram_ocr) {
+                    if (parentActivity == null || currentMessageObject == null || currentMessageObject.messageOwner == null) return;
+                    String ocrPath = null;
+                    if (!TextUtils.isEmpty(currentMessageObject.messageOwner.attachPath) && new File(currentMessageObject.messageOwner.attachPath).exists()) {
+                        ocrPath = currentMessageObject.messageOwner.attachPath;
+                    }
+                    if (TextUtils.isEmpty(ocrPath)) {
+                        final File ocrFile = FileLoader.getInstance(currentAccount).getPathToMessage(currentMessageObject.messageOwner, true);
+                        if (ocrFile != null && ocrFile.exists()) {
+                            ocrPath = ocrFile.getAbsolutePath();
+                        }
+                    }
+                    if (TextUtils.isEmpty(ocrPath)) {
+                        final AlertDialog.Builder waitBuilder = new AlertDialog.Builder(parentActivity, resourcesProvider);
+                        waitBuilder.setTitle(getString(R.string.LineGramOcrTitle));
+                        waitBuilder.setMessage(getString(R.string.LineGramOcrWait));
+                        waitBuilder.setPositiveButton(getString(R.string.OK), null);
+                        showAlertDialog(waitBuilder);
+                        return;
+                    }
+                    LineGramTextTools.showTextFromImage(parentActivity, resourcesProvider, ocrPath, lineGramBuilder -> showAlertDialog(lineGramBuilder));
                 } else if (id == gallery_menu_create_sticker) {
                     if (parentFragment == null || placeProvider == null) return;
                     if (currentMessageObject == null || currentMessageObject.messageOwner == null) return;
@@ -5915,6 +5937,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         menuItem.addSubItem(gallery_menu_savegif, R.drawable.msg_gif, getString(R.string.SaveToGIFs)).setColors(0xfffafafa, 0xfffafafa);
         menuItem.addSubItem(gallery_menu_showinchat, R.drawable.msg_message, getString(R.string.ShowInChat)).setColors(0xfffafafa, 0xfffafafa);
         menuItem.addSubItem(gallery_menu_create_sticker, R.drawable.msg_sticker, getString(R.string.CreateSticker)).setColors(0xfffafafa, 0xfffafafa);
+        menuItem.addSubItem(gallery_menu_linegram_ocr, R.drawable.msg_copy, getString(R.string.LineGramCopyTextFromImage)).setColors(0xfffafafa, 0xfffafafa);
         menuItem.addSubItem(gallery_menu_reply, R.drawable.menu_reply, getString(R.string.Reply)).setColors(0xfffafafa, 0xfffafafa);
         menuItem.addSubItem(gallery_menu_report, R.drawable.msg_report, getString(R.string.ReportProfilePhoto)).setColors(0xfffafafa, 0xfffafafa);
         menuItem.addSubItem(gallery_menu_share, R.drawable.msg_shareout, getString(R.string.ShareFile)).setColors(0xfffafafa, 0xfffafafa);
@@ -13999,6 +14022,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         menuItem.hideSubItem(gallery_menu_showall);
         menuItem.hideSubItem(gallery_menu_showinchat);
         menuItem.hideSubItem(gallery_menu_create_sticker);
+        menuItem.hideSubItem(gallery_menu_linegram_ocr);
         menuItem.hideSubItem(gallery_menu_reply);
         menuItem.hideSubItem(gallery_menu_report);
         menuItem.hideSubItem(gallery_menu_share);
@@ -14284,6 +14308,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             topCaptionEdit.setAddPhotoVisible(sendPhotoType != SELECT_TYPE_NO_SELECT && (sendPhotoType == 2 || sendPhotoType == 5) && placeProvider.canCaptureMorePhotos(), false);
             menuItem.setVisibility(View.GONE);
             menuItem.setSubItemShown(gallery_menu_create_sticker, false);
+            menuItem.setSubItemShown(gallery_menu_linegram_ocr, false);
             imagesArrLocals.addAll(photos);
             Object obj = imagesArrLocals.get(index);
             boolean allowCaption;
@@ -14547,6 +14572,8 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
 
             boolean isInvoice = newMessageObject.isInvoice();
             boolean noforwards = MessagesController.getInstance(currentAccount).isPeerNoForwards(newMessageObject.getDialogId()) || (newMessageObject.messageOwner != null && newMessageObject.messageOwner.noforwards) || newMessageObject.hasRevealedExtendedMedia();
+            // LineGram: copy text from photos, but never from protected content
+            menuItem.setSubItemShown(gallery_menu_linegram_ocr, !noforwards && !isInvoice && newMessageObject.isPhoto());
             if (isVideo && !isLivePhoto) {
                 bottomLayout.setVisibility(View.VISIBLE);
                 bottomLayout.setTag(1);
