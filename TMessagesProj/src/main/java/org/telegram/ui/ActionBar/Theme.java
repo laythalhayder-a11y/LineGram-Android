@@ -79,6 +79,7 @@ import org.json.JSONObject;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.Bitmaps;
+import org.telegram.messenger.LineGramConfig;
 import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.FileLog;
@@ -3983,7 +3984,7 @@ public class Theme {
         themeInfo.previewInColor = 0xffffffff;
         themeInfo.previewOutColor = 0xffd0e6ff;
         themeInfo.firstAccentIsDefault = true;
-        themeInfo.currentAccentId = DEFALT_THEME_ACCENT_ID;
+        themeInfo.currentAccentId = LineGramConfig.defaultAccentId("Blue", DEFALT_THEME_ACCENT_ID); // LineGram: orange
         themeInfo.sortIndex = 1;
         themeInfo.setAccentColorOptions(
                 new int[]    { 0xFF5890C5,                     0xFF239853,                    0xFFCE5E82,                    0xFF7F63C3,                    0xFF2491AD,                    0xFF299C2F,                    0xFF8854B4,                    0xFF328ACF,                    0xFF43ACC7,                    0xFF52AC44,                    0xFFCD5F93,                    0xFFD28036,                    0xFF8366CC,                    0xFFCE4E57,                    0xFFD3AE40,                    0xFF7B88AB },
@@ -4189,7 +4190,11 @@ public class Theme {
             for (ThemeInfo info : themesDict.values()) {
                 if (info.assetName != null && info.accentBaseColor != 0) {
                     String accents = themeConfig.getString("accents_" + info.assetName, null);
-                    info.currentAccentId = themeConfig.getInt("accent_current_" + info.assetName, info.firstAccentIsDefault ? DEFALT_THEME_ACCENT_ID : 0);
+                    // LineGram: orange unless the user picked another colour
+                    info.currentAccentId = themeConfig.getInt("accent_current_" + info.assetName, LineGramConfig.defaultAccentId(info.name, info.firstAccentIsDefault ? DEFALT_THEME_ACCENT_ID : 0));
+                    if ((info.themeAccentsMap == null || info.themeAccentsMap.get(info.currentAccentId) == null) && !themeConfig.contains("accent_current_" + info.assetName)) {
+                        info.currentAccentId = info.firstAccentIsDefault ? DEFALT_THEME_ACCENT_ID : 0;
+                    }
                     ArrayList<ThemeAccent> newAccents = new ArrayList<>();
                     if (!TextUtils.isEmpty(accents)) {
                         try {
@@ -8147,6 +8152,13 @@ public class Theme {
             chat_msgTextCodePaint.setTextSize(dp(Math.max(Math.min(10, SharedConfig.fontSize - 1), SharedConfig.fontSize - 2)));
             chat_msgTextCode2Paint.setTextSize(dp(Math.max(Math.min(10, SharedConfig.fontSize - 2), SharedConfig.fontSize - 3)));
             chat_msgTextCode3Paint.setTextSize(dp(Math.max(Math.min(10, SharedConfig.fontSize - 2), SharedConfig.fontSize - 5)));
+
+            // LineGram: the Arabic font the user picked for messages (null = the phone's font)
+            final Typeface lineGramFont = LineGramConfig.messageTypeface();
+            chat_msgTextPaint.setTypeface(lineGramFont);
+            chat_msgGameTextPaint.setTypeface(lineGramFont);
+            chat_replyTextPaint.setTypeface(lineGramFont);
+            chat_quoteTextPaint.setTypeface(lineGramFont);
         }
     }
 

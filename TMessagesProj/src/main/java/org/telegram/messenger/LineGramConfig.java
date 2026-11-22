@@ -2,6 +2,7 @@ package org.telegram.messenger;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
 
 import org.telegram.messenger.time.FastDateFormat;
 import org.telegram.ui.ActionBar.AlertDialog;
@@ -28,6 +29,14 @@ public class LineGramConfig {
     public static final String KEY_TIME_SECONDS = "time_seconds";
     public static final String KEY_FULL_DATE = "full_date";
     public static final String KEY_HIDE_PHONE = "hide_phone";
+    public static final String KEY_FONT = "chat_font";
+
+    public static final int FONT_SYSTEM = 0;
+    public static final int FONT_CAIRO = 1;
+    public static final int FONT_TAJAWAL = 2;
+
+    /** The orange accent: its id is 4 in the Blue, Dark Blue, Arctic Blue and Night themes. */
+    public static final int ORANGE_ACCENT_ID = 4;
 
     private static final String PREFS_NAME = "linegram_config";
 
@@ -43,6 +52,7 @@ public class LineGramConfig {
     private static volatile boolean timeSeconds;
     private static volatile boolean fullDate;
     private static volatile boolean hidePhone;
+    private static volatile int chatFont;
 
     private static volatile FastDateFormat fullDateFormat;
     private static volatile String fullDateFormatKey;
@@ -72,6 +82,7 @@ public class LineGramConfig {
             timeSeconds = p.getBoolean(KEY_TIME_SECONDS, true);
             fullDate = p.getBoolean(KEY_FULL_DATE, true);
             hidePhone = p.getBoolean(KEY_HIDE_PHONE, true);
+            chatFont = p.getInt(KEY_FONT, FONT_CAIRO);
             loaded = true;
         }
     }
@@ -149,6 +160,37 @@ public class LineGramConfig {
 
     public static boolean hidePhone() {
         return get(KEY_HIDE_PHONE);
+    }
+
+    public static int chatFont() {
+        ensureLoaded();
+        return chatFont;
+    }
+
+    public static void setChatFont(int font) {
+        ensureLoaded();
+        chatFont = font;
+        prefs().edit().putInt(KEY_FONT, font).apply();
+    }
+
+    /** The clearer Arabic font for message text, or null for the phone's own font. */
+    public static Typeface messageTypeface() {
+        switch (chatFont()) {
+            case FONT_CAIRO:
+                return AndroidUtilities.getTypeface("fonts/lg_cairo.ttf");
+            case FONT_TAJAWAL:
+                return AndroidUtilities.getTypeface("fonts/lg_tajawal.ttf");
+            default:
+                return null;
+        }
+    }
+
+    /** LineGram's orange is the default accent of the built-in themes that have it. */
+    public static int defaultAccentId(String themeName, int telegramDefault) {
+        if ("Blue".equals(themeName) || "Dark Blue".equals(themeName) || "Arctic Blue".equals(themeName) || "Night".equals(themeName)) {
+            return ORANGE_ACCENT_ID;
+        }
+        return telegramDefault;
     }
 
     /** The time shown inside a message bubble: with seconds when the user asked for them. */

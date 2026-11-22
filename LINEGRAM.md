@@ -86,6 +86,8 @@ and are shown by `org.telegram.ui.LineGramSettingsActivity`.
 | Seconds in message time | `ChatMessageCell.timeString` |
 | Full date with seconds in the message long-press menu (tap to copy) | `ChatActivity.fillMessageMenu` |
 | Hide your own phone number in Settings and your profile | `SettingsActivity`, `ProfileActivity` |
+| Orange is the default theme colour (accent 4 of the built-in themes) | `Theme`, `LineGramConfig.defaultAccentId` |
+| Clearer Arabic chat font: Cairo (default), Tajawal or the phone's font | `Theme.createCommonMessageResources`, `ChatActivityEnterView`, fonts in `assets/fonts/lg_*.ttf` (SIL OFL, licences next to them; line height tightened) |
 
 `linegram_branding/make_brand.py` redraws every logo file. Change the colours at the top of that file and run it again.
 `linegram_branding/apply_rebrand.py` lists every text edit made to the Telegram source. Run it as

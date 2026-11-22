@@ -11713,4 +11713,10 @@
     <string name="LineGramIconGold">Gold</string>
     <string name="LineGramHeaderIcon">App icon</string>
     <string name="LineGramIconInfo">Pick the icon you like. It changes on your home screen right away.</string>
+    <string name="LineGramHeaderFont">Chat font</string>
+    <string name="LineGramFontCairo">Cairo</string>
+    <string name="LineGramFontTajawal">Tajawal</string>
+    <string name="LineGramFontSystem">Phone font</string>
+    <string name="LineGramFontSample">Hello! This is how your messages look in LineGram. مرحبًا بك</string>
+    <string name="LineGramFontInfo">A clearer Arabic font for messages and the typing box. Open a chat again to see the new font.</string>
 </resources>

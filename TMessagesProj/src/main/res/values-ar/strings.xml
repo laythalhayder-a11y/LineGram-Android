@@ -1277,4 +1277,10 @@
     <string name="LineGramIconGold">ذهبي</string>
     <string name="LineGramHeaderIcon">أيقونة التطبيق</string>
     <string name="LineGramIconInfo">اختر الأيقونة التي تعجبك، وتتغير على الشاشة الرئيسية مباشرة.</string>
+    <string name="LineGramHeaderFont">خط المحادثات</string>
+    <string name="LineGramFontCairo">Cairo (القاهرة)</string>
+    <string name="LineGramFontTajawal">Tajawal (تجوال)</string>
+    <string name="LineGramFontSystem">خط الهاتف</string>
+    <string name="LineGramFontSample">مرحبًا! هكذا تظهر رسائلك في لاين كرام.</string>
+    <string name="LineGramFontInfo">خط عربي أوضح للرسائل ولمربع الكتابة. افتح المحادثة من جديد لترى الخط الجديد.</string>
 </resources>

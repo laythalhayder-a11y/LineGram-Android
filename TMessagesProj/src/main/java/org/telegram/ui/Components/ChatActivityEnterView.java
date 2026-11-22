@@ -46,6 +46,7 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.net.Uri;
@@ -5894,6 +5895,11 @@ public class ChatActivityEnterView extends FrameLayout implements
         messageEditText.setSingleLine(false);
         messageEditText.setMaxLines(6);
         messageEditText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
+        // LineGram: type with the same font the messages use
+        final Typeface lineGramFont = LineGramConfig.messageTypeface();
+        if (lineGramFont != null) {
+            messageEditText.setTypeface(lineGramFont);
+        }
         messageEditText.setGravity(Gravity.BOTTOM);
         messageEditText.setPadding(0, dp(9), 0, dp(10));
         messageEditText.setBackgroundDrawable(null);

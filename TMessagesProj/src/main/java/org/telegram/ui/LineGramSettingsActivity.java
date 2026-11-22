@@ -3,17 +3,22 @@ package org.telegram.ui;
 import static org.telegram.messenger.LocaleController.getString;
 
 import android.content.Context;
+import android.graphics.Typeface;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.LineGramConfig;
 import org.telegram.messenger.R;
+import org.telegram.messenger.SharedConfig;
 import org.telegram.ui.ActionBar.ActionBar;
 import org.telegram.ui.ActionBar.BaseFragment;
+import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Cells.AppIconsSelectorCell;
 import org.telegram.ui.Cells.TextCheckCell;
 import org.telegram.ui.Components.BulletinFactory;
@@ -39,9 +44,13 @@ public class LineGramSettingsActivity extends BaseFragment {
     private static final int ID_HIDE_PHONE = 9;
     private static final int ID_YOUR_ID = 10;
     private static final int ID_SAVE_FOLDER = 11;
+    private static final int ID_FONT_SYSTEM = 12;
+    private static final int ID_FONT_CAIRO = 13;
+    private static final int ID_FONT_TAJAWAL = 14;
 
     private UniversalRecyclerView listView;
     private AppIconsSelectorCell appIconsCell;
+    private TextView fontPreview;
 
     @Override
     protected boolean useSimpleActionBar() {
@@ -66,6 +75,14 @@ public class LineGramSettingsActivity extends BaseFragment {
 
         appIconsCell = new AppIconsSelectorCell(context, this, currentAccount);
 
+        fontPreview = new TextView(context);
+        fontPreview.setTextSize(TypedValue.COMPLEX_UNIT_DIP, SharedConfig.fontSize);
+        fontPreview.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+        fontPreview.setGravity(Gravity.CENTER);
+        fontPreview.setPadding(AndroidUtilities.dp(21), AndroidUtilities.dp(14), AndroidUtilities.dp(21), AndroidUtilities.dp(14));
+        fontPreview.setText(getString(R.string.LineGramFontSample));
+        updateFontPreview();
+
         listView = new UniversalRecyclerView(this, this::fillItems, this::onItemClick, null);
         listView.setSections();
         listView.setSectionsDrawBackground(true);
@@ -82,6 +99,18 @@ public class LineGramSettingsActivity extends BaseFragment {
             items.add(iconsItem);
             items.add(UItem.asShadow(getString(R.string.LineGramIconInfo)));
         }
+
+        final int font = LineGramConfig.chatFont();
+        items.add(UItem.asHeader(getString(R.string.LineGramHeaderFont)));
+        if (fontPreview != null) {
+            final UItem previewItem = UItem.asCustom(fontPreview);
+            previewItem.intValue = LayoutHelper.WRAP_CONTENT;
+            items.add(previewItem);
+        }
+        items.add(UItem.asRadio(ID_FONT_CAIRO, getString(R.string.LineGramFontCairo)).setChecked(font == LineGramConfig.FONT_CAIRO));
+        items.add(UItem.asRadio(ID_FONT_TAJAWAL, getString(R.string.LineGramFontTajawal)).setChecked(font == LineGramConfig.FONT_TAJAWAL));
+        items.add(UItem.asRadio(ID_FONT_SYSTEM, getString(R.string.LineGramFontSystem)).setChecked(font == LineGramConfig.FONT_SYSTEM));
+        items.add(UItem.asShadow(getString(R.string.LineGramFontInfo)));
 
         items.add(UItem.asHeader(getString(R.string.LineGramHeaderSending)));
         items.add(UItem.asCheck(ID_CONFIRM_VOICE, getString(R.string.LineGramConfirmVoice)).setChecked(LineGramConfig.confirmVoice()));
@@ -119,6 +148,20 @@ public class LineGramSettingsActivity extends BaseFragment {
             case ID_TIME_SECONDS: key = LineGramConfig.KEY_TIME_SECONDS; break;
             case ID_FULL_DATE: key = LineGramConfig.KEY_FULL_DATE; break;
             case ID_HIDE_PHONE: key = LineGramConfig.KEY_HIDE_PHONE; break;
+            case ID_FONT_SYSTEM:
+            case ID_FONT_CAIRO:
+            case ID_FONT_TAJAWAL: {
+                final int font = item.id == ID_FONT_CAIRO ? LineGramConfig.FONT_CAIRO : item.id == ID_FONT_TAJAWAL ? LineGramConfig.FONT_TAJAWAL : LineGramConfig.FONT_SYSTEM;
+                if (font != LineGramConfig.chatFont()) {
+                    LineGramConfig.setChatFont(font);
+                    Theme.createCommonMessageResources();
+                    updateFontPreview();
+                    if (listView != null && listView.adapter != null) {
+                        listView.adapter.update(true);
+                    }
+                }
+                return;
+            }
             case ID_YOUR_ID: {
                 if (AndroidUtilities.addToClipboard(String.valueOf(getUserConfig().getClientUserId()))) {
                     BulletinFactory.of(this).createCopyBulletin(getString(R.string.LineGramIdCopied)).show();
@@ -134,6 +177,13 @@ public class LineGramSettingsActivity extends BaseFragment {
         }
         if (listView != null && listView.adapter != null) {
             listView.adapter.update(true);
+        }
+    }
+
+    private void updateFontPreview() {
+        if (fontPreview != null) {
+            final Typeface typeface = LineGramConfig.messageTypeface();
+            fontPreview.setTypeface(typeface != null ? typeface : Typeface.DEFAULT);
         }
     }
 
