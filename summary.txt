@@ -1,0 +1,17 @@
+run:    https://github.com/laythalhayder-a11y/LineGram-Android/actions/runs/45072589005
+commit: c2ea48c53805ba767f775fc19ac308a797419cf7
+status: success
+keys:   ok
+cpu:    arm64 only
+steps:  keys=success fetch=success sdk=success build=success collect=success
+time:   2026-11-22 21:49 UTC
+
+apk files:
+  54904288 bytes  TMessagesProj_App/build/outputs/apk/afat/release/app.apk
+
+Filesystem            Size  Used Avail Use% Mounted on
+/dev/mapper/cow-root  145G   42G  103G  29% /
+
+               total        used        free      shared  buff/cache   available
+Mem:           15701       11705         322          50        4059        3996
+Swap:           3071           0        3071
