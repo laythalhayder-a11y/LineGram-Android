@@ -131,7 +131,7 @@ android {
         }
         afat {
             ndk {
-                abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+                abiFilters.addAll(lineGramAbis())   // LineGram: from LINEGRAM_ABIS
             }
             sourceSets.debug {
                 manifest.srcFile '../TMessagesProj/config/debug/AndroidManifest_SDK23.xml'
@@ -195,3 +195,9 @@ android {
 }
 
 apply plugin: 'com.google.gms.google-services'
+
+// LineGram: CPU types, from LINEGRAM_ABIS in gradle.properties or -PLINEGRAM_ABIS=arm64-v8a
+def lineGramAbis() {
+    def value = (project.findProperty("LINEGRAM_ABIS") ?: "armeabi-v7a,arm64-v8a,x86,x86_64").toString()
+    return value.split(",").collect { it.trim() }.findAll { !it.isEmpty() }
+}

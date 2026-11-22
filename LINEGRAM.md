@@ -13,7 +13,7 @@ with their Telegram phone number and see their Telegram chats. It is not a separ
 |------|-------|
 | Source code | Complete. All 14,160 original files match Telegram's GitHub repository. The 22 third-party folders missing from the ZIP download are fetched by `fetch_submodules.sh`. |
 | Rename to LineGram | Done and checked: Java syntax of the edited files, every edited XML and JSON file, pixel size and format of every replaced image. |
-| APK | Builds on GitHub: the first run finished the whole Gradle build in 16 minutes (arm64). Not tested on a phone yet. |
+| APK | Builds on GitHub in about 25 minutes (arm64). |
 
 ## 1. Three things to do before the first build
 
@@ -53,6 +53,8 @@ git, about 16 GB of RAM and about 40 GB of free disk space.
 3. Open the folder in Android Studio (Open, not Import) and wait for the sync.
 4. Run: `./gradlew :TMessagesProj_App:assembleAfatRelease`
 5. The APK is in `TMessagesProj_App/build/outputs/apk/afat/release/app.apk`.
+
+To build only for phones from about 2017 on (much faster), add `-PLINEGRAM_ABIS=arm64-v8a` to step 4.
 
 On Windows keep the project in a short path such as `C:\lg`. Long paths can break the native build.
 

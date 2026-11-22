@@ -59,6 +59,13 @@ def patch_re(rel, edits):
 
 GOOGLE_KEY_RX = r'AIza[0-9A-Za-z_-]{35}'   # format of Google API keys
 
+LINEGRAM_ABIS_FN = (
+    "// LineGram: CPU types, from LINEGRAM_ABIS in gradle.properties or -PLINEGRAM_ABIS=arm64-v8a\n"
+    "def lineGramAbis() {\n"
+    "    def value = (project.findProperty(\"LINEGRAM_ABIS\") ?: \"armeabi-v7a,arm64-v8a,x86,x86_64\").toString()\n"
+    "    return value.split(\",\").collect { it.trim() }.findAll { !it.isEmpty() }\n"
+    "}\n\n")
+
 J = 'TMessagesProj/src/main/java/org/telegram/'
 R = 'TMessagesProj/src/main/res/'
 
@@ -69,7 +76,9 @@ patch('gradle.properties', [
      '# LineGram: your own Telegram API keys. Create them at https://my.telegram.org\n'
      '# (API development tools). The build stops until both are filled in.\n'
      'TG_API_ID=0\n'
-     'TG_API_HASH=\n', 1),
+     'TG_API_HASH=\n'
+     '# LineGram: CPU types inside the APK. arm64-v8a alone covers phones from about 2017 on.\n'
+     'LINEGRAM_ABIS=armeabi-v7a,arm64-v8a,x86,x86_64\n', 1),
 ])
 
 patch('TMessagesProj/build.gradle', [
@@ -77,7 +86,11 @@ patch('TMessagesProj/build.gradle', [
      "    defaultConfig {\n        minSdkVersion 23\n        targetSdkVersion 36\n\n"
      "        // LineGram: Telegram API keys are read from gradle.properties (TG_API_ID / TG_API_HASH)\n"
      "        buildConfigField \"int\", \"TG_API_ID\", lineGramApiId()\n"
-     "        buildConfigField \"String\", \"TG_API_HASH\", \"\\\"\" + lineGramApiHash() + \"\\\"\"\n", 1),
+     "        buildConfigField \"String\", \"TG_API_HASH\", \"\\\"\" + lineGramApiHash() + \"\\\"\"\n\n"
+     "        // LineGram: CPU types of the native libraries, from LINEGRAM_ABIS\n"
+     "        ndk {\n"
+     "            abiFilters.addAll(lineGramAbis())\n"
+     "        }\n", 1),
     ("preBuild.dependsOn checkVisibility\n",
      "preBuild.dependsOn checkVisibility\n\n"
      "// LineGram: API keys from gradle.properties, or from -PTG_API_ID=... -PTG_API_HASH=... on the command line.\n"
@@ -88,6 +101,7 @@ patch('TMessagesProj/build.gradle', [
      "def lineGramApiHash() {\n"
      "    return (project.findProperty(\"TG_API_HASH\") ?: \"\").toString().replaceAll(\"[^0-9a-fA-F]\", \"\")\n"
      "}\n\n"
+     + LINEGRAM_ABIS_FN +
      "task checkLineGramApiKeys {\n"
      "    doFirst {\n"
      "        if (lineGramApiId() == \"0\" || lineGramApiHash().isEmpty()) {\n"
@@ -97,6 +111,13 @@ patch('TMessagesProj/build.gradle', [
      "    }\n"
      "}\n\n"
      "preBuild.dependsOn checkLineGramApiKeys\n", 1),
+])
+
+patch('TMessagesProj_App/build.gradle', [
+    ('        afat {\n            ndk {\n                abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"\n            }\n',
+     '        afat {\n            ndk {\n                abiFilters.addAll(lineGramAbis())   // LineGram: from LINEGRAM_ABIS\n            }\n', 1),
+    ("apply plugin: 'com.google.gms.google-services'\n",
+     "apply plugin: 'com.google.gms.google-services'\n\n" + LINEGRAM_ABIS_FN.rstrip('\n') + "\n", 1),
 ])
 
 # ---- 2. BuildVars: keys, fork-safe switches --------------------------------------

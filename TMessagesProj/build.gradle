@@ -152,6 +152,11 @@ android {
         buildConfigField "int", "TG_API_ID", lineGramApiId()
         buildConfigField "String", "TG_API_HASH", "\"" + lineGramApiHash() + "\""
 
+        // LineGram: CPU types of the native libraries, from LINEGRAM_ABIS
+        ndk {
+            abiFilters.addAll(lineGramAbis())
+        }
+
         vectorDrawables.generatedDensities = ['mdpi', 'hdpi', 'xhdpi', 'xxhdpi']
 
         multiDexEnabled true
@@ -291,6 +296,12 @@ def lineGramApiId() {
 
 def lineGramApiHash() {
     return (project.findProperty("TG_API_HASH") ?: "").toString().replaceAll("[^0-9a-fA-F]", "")
+}
+
+// LineGram: CPU types, from LINEGRAM_ABIS in gradle.properties or -PLINEGRAM_ABIS=arm64-v8a
+def lineGramAbis() {
+    def value = (project.findProperty("LINEGRAM_ABIS") ?: "armeabi-v7a,arm64-v8a,x86,x86_64").toString()
+    return value.split(",").collect { it.trim() }.findAll { !it.isEmpty() }
 }
 
 task checkLineGramApiKeys {

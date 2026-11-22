@@ -118,7 +118,7 @@ jobs:
           fi
           case "$CPU_CHOICE" in
             all*) echo "Building for all four CPU types." ;;
-            *)    args+=("-Pandroid.injected.build.abi=arm64-v8a"); echo "Building for arm64-v8a." ;;
+            *)    args+=("-PLINEGRAM_ABIS=arm64-v8a"); echo "Building for arm64-v8a." ;;
           esac
           ./gradlew "${args[@]}" 2>&1 | tee build.log
 
@@ -136,6 +136,16 @@ jobs:
             exit 1
           fi
           echo "Using $apk"
+          # A test-only APK installs from Android Studio but phones refuse it ("package appears to be invalid").
+          aapt2="$ANDROID_HOME/build-tools/36.0.0/aapt2"
+          if [ -x "$aapt2" ]; then
+            manifest="$("$aapt2" dump xmltree --file AndroidManifest.xml "$apk" || true)"
+            grep -E "package=|versionName|testOnly" <<< "$manifest" || true
+            if grep -q "testOnly.*=true" <<< "$manifest"; then
+              echo "::error::The APK is marked test-only, phones refuse to install it."
+              exit 1
+            fi
+          fi
           version="$(grep -E '^APP_VERSION_NAME=' gradle.properties | cut -d= -f2 | tr -d '[:space:]')"
           name="LineGram-$version.apk"
           if [ "$KEYS" = "missing" ]; then name="LineGram-$version-TEST-cannot-log-in.apk"; fi
